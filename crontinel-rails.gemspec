@@ -1,6 +1,10 @@
+# frozen_string_literal: true
+
+version = File.read(File.expand_path('../lib/crontinel/rails/version.rb', __FILE__))[/VERSION\s*=\s*['"]([^'"]+)['"]/, 1]
+
 Gem::Specification.new do |spec|
   spec.name = "crontinel-rails"
-  spec.version = Crontinel::Rails::VERSION
+  spec.version = version
   spec.authors = ["Harun R Rayhan"]
   spec.email = ["me@harunray.com"]
   spec.summary = "Crontinel integration for Ruby on Rails — monitor cron jobs and background workers"
