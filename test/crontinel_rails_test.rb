@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
-require "minitest/autorun"
-require "minitest/reporters"
-require "crontinel-rails"
-
-Minitest::Reporters.use!
+require "test_helper"
 
 describe Crontinel::Rails do
   describe ".VERSION" do
