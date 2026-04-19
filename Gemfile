@@ -2,6 +2,8 @@
 
 source "https://rubygems.org"
 
+gem "crontinel", git: "https://github.com/crontinel/ruby", branch: "main"
+
 gemspec
 
 group :development, :test do
