@@ -31,6 +31,8 @@ module Crontinel
       end
 
       initializer "crontinel.rails.sidekiq" do
+        next unless defined?(Sidekiq)
+
         Sidekiq.configure_server do |config|
           config.server_middleware do |chain|
             chain.add Crontinel::Rails::Sidekiq::ServerMiddleware
