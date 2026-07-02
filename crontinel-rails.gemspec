@@ -33,6 +33,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "minitest", "~> 5.0"
   spec.add_development_dependency "rails", "~> 7.0"
-  spec.add_development_dependency "sidekiq", "~> 7.0"
+  spec.add_development_dependency "sidekiq", "~> 8.1"
   spec.add_development_dependency "rubocop", "~> 1.50"
 end
