@@ -11,7 +11,7 @@ group :development, :test do
   gem "rake", "~> 13.0"
   gem "minitest", "~> 6.0"
   gem "minitest-reporters", "~> 1.0"
-  gem "rails", "~> 7.0"
+  gem "rails", "~> 8.1"
   gem "sidekiq", "~> 8.1"
   gem "rubocop", "~> 1.50"
 end
