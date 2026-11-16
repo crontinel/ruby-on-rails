@@ -3,40 +3,27 @@
 module Crontinel
   module Rails
     class Engine < ::Rails::Engine
-      isolate_namespace Crontinel::Rails
-
       config.crontinel = ActiveSupport::OrderedOptions.new
-
-      config.crontinel.api_key = ENV["CRONTINEL_API_KEY"]
-      config.crontinel.endpoint = ENV.fetch("CRONTINEL_ENDPOINT", "https://app.crontinel.com/api/v1")
       config.crontinel.enabled = true
-      config.crontinel.log_level = :info
 
-      initializer "crontinel.configure_defaults" do |app|
+      initializer "crontinel.configure" do |app|
+        cfg = app.config.crontinel
+        Crontinel::Rails.settings = { api_key: cfg.api_key, endpoint: cfg.endpoint || ENV["CRONTINEL_ENDPOINT"] }
+        Crontinel::Rails.reset_client!
+      end
+
+      initializer "crontinel.rails.active_job" do |app|
         next unless app.config.crontinel.enabled
 
-        app.config.crontinel.api_key ||= ENV["CRONTINEL_API_KEY"]
-        app.config.crontinel.endpoint ||= "https://app.crontinel.com/api/v1"
-
-        Crontinel.client(
-          api_key: app.config.crontinel.api_key,
-          endpoint: app.config.crontinel.endpoint
-        )
+        ActiveSupport.on_load(:active_job) { include Crontinel::Rails::ActiveJob }
       end
 
-      initializer "crontinel.rails.active_job" do
-        ActiveSupport.on_load(:active_job) do
-          include Crontinel::Rails::ActiveJob
-        end
-      end
+      initializer "crontinel.rails.sidekiq" do |app|
+        next unless app.config.crontinel.enabled && defined?(::Sidekiq) && defined?(::Sidekiq::Middleware)
 
-      initializer "crontinel.rails.sidekiq" do
-        next unless defined?(Sidekiq)
-
-        Sidekiq.configure_server do |config|
-          config.server_middleware do |chain|
-            chain.add Crontinel::Rails::Sidekiq::ServerMiddleware
-          end
+        require "crontinel/rails/sidekiq/server_middleware"
+        ::Sidekiq.configure_server do |config|
+          config.server_middleware { |chain| chain.add Crontinel::Rails::Sidekiq::ServerMiddleware }
         end
       end
     end

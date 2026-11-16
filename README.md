@@ -9,8 +9,7 @@ Unlike generic uptime tools, Crontinel knows when a job started but crashed sile
 Add to your `Gemfile`:
 
 ```ruby
-gem "crontinel-rails", "~> 0.1"
-gem "crontinel", "~> 0.1"
+gem "crontinel-rails", "~> 0.1.1"
 ```
 
 ```bash
@@ -19,58 +18,37 @@ bundle install
 
 ## Configuration
 
-Create `config/initializers/crontinel.rb`:
-
-```ruby
-Crontinel.setup do |config|
-  config.api_key = ENV.fetch("CRONTINEL_API_KEY")
-  config.endpoint = "https://app.crontinel.com/api/v1" # optional
-end
-```
-
-Or via environment variables:
+Set your app's ingest key. That is all most apps need:
 
 ```bash
 CRONTINEL_API_KEY=your_key_here
-CRONTINEL_ENDPOINT=https://app.crontinel.com/api/v1  # optional
+CRONTINEL_ENDPOINT=https://app.crontinel.com  # optional, for self-hosted
 ```
 
-## ActiveJob Integration
-
-Automatically tracks all ActiveJob.perform_later jobs:
+Or in `config/application.rb`:
 
 ```ruby
-# Just include the module — it wraps around_perform automatically
-class MyJob < ApplicationJob
-  include Crontinel::Rails::ActiveJob
+config.crontinel.api_key = ENV["CRONTINEL_API_KEY"]
+config.crontinel.enabled = true # set false to turn reporting off
+```
 
-  def perform(*args)
-    # your job work
-  end
+Without an API key the gem reports nothing and your jobs run as usual.
+
+## What it reports
+
+- **Active Job:** every job reports one run when `perform` finishes, named by the job class (`NightlyReportJob`). An exception reports a failed run and is re-raised.
+- **Sidekiq:** plain Sidekiq workers report the same way through server middleware, added automatically. Active Job jobs on Sidekiq report once, not twice.
+
+If Crontinel is unreachable, the gem logs a warning and your job's result is unchanged.
+
+Runs are sent over the MCP endpoint and carry no outcome metrics. To alert when a job finished but did nothing, send the [HTTP check-in receipt](https://docs.crontinel.com/check-in/recipes/) with a count from inside the job.
+
+## Manual tracking
+
+```ruby
+Crontinel::Rails.track("nightly-import") do
+  # your work
 end
-```
-
-## Sidekiq Integration
-
-Automatically tracks Sidekiq jobs via middleware:
-
-```ruby
-# lib/crontinel_rails.rb
-require "crontinel/rails/sidekiq/server_middleware"
-
-Sidekiq.configure_server do |config|
-  config.server_middleware do |chain|
-    chain.add Crontinel::Rails::Sidekiq::ServerMiddleware
-  end
-end
-```
-
-## Manual Tracking
-
-```ruby
-Crontinel.client.task_started(name: "my-cron-job")
-# do work...
-Crontinel.client.task_finished(name: "my-cron-job", duration_ms: 150)
 ```
 
 ## Supported Rails Versions
