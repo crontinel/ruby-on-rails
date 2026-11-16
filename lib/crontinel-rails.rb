@@ -55,4 +55,4 @@ module Crontinel
   end
 end
 
-require "crontinel/rails/engine" if defined?(::Rails::Engine)
+require "crontinel/rails/engine" if defined?(Rails::Engine)

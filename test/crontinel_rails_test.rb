@@ -10,8 +10,13 @@ class FakeClient
     @fail_with = fail_with
   end
 
-  def task_finished(**args) = record(:finished, args)
-  def task_failed(**args) = record(:failed, args)
+  def task_finished(**args)
+    record(:finished, args)
+  end
+
+  def task_failed(**args)
+    record(:failed, args)
+  end
 
   private
 
@@ -23,7 +28,10 @@ class FakeClient
 end
 
 describe Crontinel::Rails do
-  after { Crontinel::Rails.settings = {}; Crontinel::Rails.reset_client! }
+  after do
+    Crontinel::Rails.settings = {}
+    Crontinel::Rails.reset_client!
+  end
 
   def with_client(client)
     Crontinel::Rails.instance_variable_set(:@client, client)
@@ -70,7 +78,11 @@ describe Crontinel::Rails::Sidekiq::ServerMiddleware do
     fake = FakeClient.new
     Crontinel::Rails.instance_variable_set(:@client, fake)
     mw = Crontinel::Rails::Sidekiq::ServerMiddleware.new
-    worker = Class.new { def self.name = "ReportWorker" }.new
+    worker = Class.new do
+      def self.name
+        "ReportWorker"
+      end
+    end.new
     mw.call(worker, {}, "default") { :done }
     mw.call(worker, { "wrapped" => "SomeJob" }, "default") { :done }
     assert_equal [[:finished, "ReportWorker"]], fake.calls
