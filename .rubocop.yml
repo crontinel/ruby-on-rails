@@ -60,3 +60,8 @@ Gemspec/DevelopmentDependencies:
 
 Layout/LineLength:
   Max: 150
+# Spec-style describe blocks and the gemspec are one long block by design.
+Metrics/BlockLength:
+  Exclude:
+    - "test/**/*"
+    - "*.gemspec"
